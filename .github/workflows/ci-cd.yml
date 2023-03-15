@@ -1,48 +1,46 @@
 name: Build Test and Deploy site vitrine
 
-on: push
+on: [push, workflow_dispatch ]
 
 env:
   RESOURCE-GROUP: site-vitrine-maleo
   LOCATION: westeurope
   WEBAPP-NAME: vitrine-maleo
+  TEMPLATE-FILE: .azure/bicep/vitrine-maleo.bicep
 
 jobs:
 
   build-and-test:
     runs-on: ubuntu-latest 
-    # checkout the repository
     steps:
     - uses: actions/checkout@v2
     # Install the .NET Core workload
     - name: Setup .NET 
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v2
       with:
-        dotnet-version: 7.0.100
+        dotnet-version: '6.0.x'
         include-prereleases: true
     # Build the Wap project
+    #Build/Test/Publish the .net project
     - name: Build with dotnet
-      run: dotnet build ./vitrine-maleo.sln --configuration Release
-    # Execute all unit tests in the solution
-    - name: test with dotnet
-      run: dotnet test ./vitrine-maleo.sln --configuration Release 
-    # publish with dotnet
-    - name : dotnet publish
-      run: dotnet publish ./src/Web/vitrine-maleo.csproj --configuration Release --output ${{env.DOTNET_ROOT}}/myapp
-
+      run: dotnet build ./eShopOnWeb.sln --configuration Release
+    - name: Test with dotnet
+      run: dotnet test ./eShopOnWeb.sln --configuration Release
+    - name: dotnet publish
+      run: dotnet publish ./src/Web/Web.csproj -c Release -o ${{env.DOTNET_ROOT}}/myapp
     # upload the published website code artifacts
     - name: Upload artifact for deployment job
       uses: actions/upload-artifact@v3
       with:
         name: .net-app
         path: ${{env.DOTNET_ROOT}}/myapp
-    
+        
     # upload the bicep template as artifacts for next job
-    - name: Upload Bicep template
+    - name: Upload artifact for deployment job
       uses: actions/upload-artifact@v3
       with:
         name: bicep-template
-        path: ./vitrine-maleo.bicep
+        path: ${{ env.TEMPLATE-FILE }}
 
   deploy:
     runs-on: ubuntu-latest
