@@ -78,7 +78,7 @@ jobs:
       with:
         subscriptionId: ${{ secrets.AZURE_CREDENTIALS.subscriptionId }}
         resourceGroupName: ${{ env.RESOURCE-GROUP }}
-        template: ./vitrine-maleo.bicep
+        template: ./vitrine-maleo.bicep/vitrine-maleo.bicep
         parameters: 'webAppName=${{ env.WEBAPP-NAME }} location=${{ env.LOCATION }}'
         failOnStdErr: false   
     
