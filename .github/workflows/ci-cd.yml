@@ -1,11 +1,10 @@
-name: .NET Core Desktop
+name: Build Test and Deploy site vitrine
 
 on: push
 
 env:
   RESOURCE-GROUP: site-vitrine-maleo
   LOCATION: westeurope
-  TEMPLATE-FILE: vitrine-maleo.bicep
   WEBAPP-NAME: vitrine-maleo
 
 jobs:
@@ -16,13 +15,12 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
     # Install the .NET Core workload
     - name: Install .NET Core
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: 6.0.x
+        include-prereleases: true
     # Build the Wap project
     - name: Build with dotnet
       run: dotnet build ./vitrine-maleo.sln --configuration Release
@@ -31,23 +29,21 @@ jobs:
       run: dotnet test ./vitrine-maleo.sln --configuration Release 
     # publish with dotnet
     - name : dotnet publish
-      run: dotnet publish ./vitrine-maleo.csproj --configuration Release --output ./vitrine-maleo.sln.publish
+      run: dotnet publish ./vitrine-maleo.csproj --configuration Release --output ${{env.DOTNET_ROOT}}/myapp
 
     # upload the published website code artifacts
     - name: Upload artifact for deployment job
       uses: actions/upload-artifact@v3
       with:
         name: .net-app
-        path: ./vitrine-maleo.sln.publish
+        path: ${{env.DOTNET_ROOT}}/myapp
     
     # upload the bicep template as artifacts for next job
     - name: Upload Bicep template
       uses: actions/upload-artifact@v3
       with:
-        name: vitrine-maleo.bicep
+        name: bicep-template
         path: ./vitrine-maleo.bicep
-        artifact-path: vitrine-maleo.bicep
-        type: bicep
 
   deploy:
     runs-on: ubuntu-latest
@@ -64,8 +60,8 @@ jobs:
     - name: Download artifact from build job
       uses: actions/download-artifact@v3
       with:
-        name: vitrine-maleo.bicep
-        path: ./vitrine-maleo.bicep
+        name: bicep-template
+        path: bicep-template
     
     #Login in your azure subscription using a service principal (credentials stored as GitHub Secret in repo)
     - name: Azure Login
@@ -78,7 +74,7 @@ jobs:
       with:
         subscriptionId: ${{ secrets.AZURE_CREDENTIALS.subscriptionId }}
         resourceGroupName: ${{ env.RESOURCE-GROUP }}
-        template: ./vitrine-maleo.bicep/vitrine-maleo.bicep
+        template: bicep-template/vitrine-maleo.bicep
         parameters: 'webAppName=${{ env.WEBAPP-NAME }} location=${{ env.LOCATION }}'
         failOnStdErr: false   
     
