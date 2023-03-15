@@ -49,9 +49,6 @@ jobs:
 
   build-and-test:
     runs-on: ubuntu-latest 
-    strategy:
-      matrix:
-        configuration: [Debug, Release]
     # checkout the repository
     steps:
     - name: Checkout
@@ -69,6 +66,6 @@ jobs:
     # Execute all unit tests in the solution
     - name: test with dotnet
       run: dotnet test ./vitrine-maleo.sln --configuration Release 
-    # # publish with dotnet
-    # - name : dotnet publish
-    #   run: dotnet publish ./vitrine-maleo.csproj --configuration Release --output ./vitrine-maleo.sln.publish
+    # publish with dotnet
+    - name : dotnet publish
+      run: dotnet publish ./vitrine-maleo.csproj --configuration Release --output ./vitrine-maleo.sln.publish
