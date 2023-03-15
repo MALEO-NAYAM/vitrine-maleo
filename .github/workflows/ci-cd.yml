@@ -38,7 +38,7 @@
 
 name: .NET Core Desktop
 
-on: [push, workflows_dispatch]
+on: push
 
 env:
   Test_Project_Path: your-test-project-path                 # Replace with the path to your test project, i.e. MyWpfApp.Tests\MyWpfApp.Tests.csproj.
